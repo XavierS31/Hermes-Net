@@ -8,21 +8,12 @@ export function MetricsSidebar() {
     storm,
     bridges,
     hoverBridgeId,
-    tick,
+    telemetry,
   } = useC2()
 
-  const bridgeRows = useMemo(
-    () =>
-      bridges.map((b) => ({
-        ...b,
-        windMph: Math.min(165, Math.round(b.windMph + tick * 1.8)),
-      })),
-    [bridges, tick],
-  )
-
   const hover = useMemo(
-    () => bridgeRows.find((b) => b.id === hoverBridgeId),
-    [bridgeRows, hoverBridgeId],
+    () => bridges.find((b) => b.id === hoverBridgeId),
+    [bridges, hoverBridgeId],
   )
 
   const gaugeOffset = 100 - evacuationPct
@@ -79,7 +70,7 @@ export function MetricsSidebar() {
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
           <span className="text-2xl font-semibold tabular-nums text-white">
-            {evacuationPct.toFixed(0)}%
+            {telemetry ? evacuationPct.toFixed(0) : '—'}%
           </span>
           <span className="text-[9px] uppercase text-zinc-500">Total evac</span>
         </div>
@@ -108,8 +99,8 @@ export function MetricsSidebar() {
           Bridge throughput (vph)
         </p>
         <ul className="flex flex-col gap-3">
-          {bridgeRows.map((b) => {
-            const cap = b.id === 'howard' ? 9500 : 6500
+          {bridges.map((b) => {
+            const cap = b.capacity_vph || 6500
             const pct = Math.min(100, (b.vph / cap) * 100)
             return (
               <li key={b.id}>
@@ -123,7 +114,7 @@ export function MetricsSidebar() {
                     style={{
                       width: `${pct}%`,
                       background:
-                        b.windMph > 45
+                        b.wind_mph > 45
                           ? `linear-gradient(90deg, ${SN.crimson}, ${SN.amber})`
                           : `linear-gradient(90deg, ${SN.cyan}, #39FF14)`,
                     }}
@@ -144,10 +135,15 @@ export function MetricsSidebar() {
             Hover · {hover.name}
           </p>
           <p className="text-zinc-300">
-            Wind {hover.windMph} mph · closure p.{' '}
+            Wind {hover.wind_mph} mph · closure p.{' '}
             <span style={{ color: SN.amber }}>
-              {(hover.closureRisk * 100).toFixed(0)}%
+              {(hover.closure_risk * 100).toFixed(0)}%
             </span>
+            {hover.closed ? (
+              <span className="ml-2 font-semibold" style={{ color: SN.crimson }}>
+                CLOSED
+              </span>
+            ) : null}
           </p>
         </div>
       )}

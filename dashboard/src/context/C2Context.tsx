@@ -4,16 +4,12 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
-import {
-  bridgeLocations,
-  generateResidentTrips,
-  stormAtTick,
-  TICK_COUNT,
-  type TripDatum,
-} from '../data/mockSimulation'
+import type { EnvironmentState, TripDatum } from '../data/simulationTypes'
+import { useSimulationState } from '../state/SimulationStateContext'
 
 export type A2ALogLevel = 'system' | 'alert' | 'rpc'
 
@@ -31,16 +27,28 @@ type ZoneFilter = {
   maxLat: number
 } | null
 
+export type StormHud = {
+  label: string
+  windMph: number
+  category: number
+}
+
 type C2Value = {
+  connected: boolean
   tick: number
+  tickCount: number
+  tickHours: number
   currentTime: number
   playing: boolean
   trips: TripDatum[]
-  bridges: ReturnType<typeof bridgeLocations>
-  storm: ReturnType<typeof stormAtTick>
+  bridges: import('../data/simulationTypes').BridgeState[]
+  telemetry: import('../data/simulationTypes').Telemetry | null
+  storm: StormHud
   evacuationPct: number
-  missionDeadline: Date
-  simEpochUtc: Date
+  missionDeadline: Date | null
+  simulationClockUtc: string | null
+  serverTimeUtc: string | null
+  environmentState: EnvironmentState | null
   logs: A2ALogEntry[]
   selectedZone: ZoneFilter
   highlightedAgentIds: Set<number> | null
@@ -55,11 +63,8 @@ type C2Value = {
 
 const C2Context = createContext<C2Value | null>(null)
 
-const MISSION_HOURS = 7 * 24
-
 export function C2Provider({ children }: { children: ReactNode }) {
-  const [tick, setTickState] = useState(0)
-  const [playing, setPlaying] = useState(false)
+  const sim = useSimulationState()
   const [logs, setLogs] = useState<A2ALogEntry[]>([])
   const [hoverBridgeId, setHoverBridgeId] = useState<string | null>(null)
   const [selectedZone, setSelectedZone] = useState<ZoneFilter>(null)
@@ -67,26 +72,39 @@ export function C2Provider({ children }: { children: ReactNode }) {
     null,
   )
 
-  const trips = useMemo(() => generateResidentTrips(5200, 1337), [])
-  const bridges = useMemo(() => bridgeLocations(), [])
+  const tickCount =
+    sim.state?.tick_count ?? sim.handshake?.tick_count ?? 14
+  const tickHours =
+    sim.state?.tick_hours ?? sim.handshake?.tick_hours ?? 12
 
-  const missionDeadline = useMemo(
-    () => new Date(Date.now() + MISSION_HOURS * 3600 * 1000),
-    [],
-  )
-  const simEpochUtc = useMemo(
-    () => new Date(Date.UTC(2026, 2, 28, 12, 0, 0)),
-    [],
-  )
+  const tick = sim.state?.tick_index ?? 0
+  const playing = sim.state?.playing ?? false
+  const trips = sim.state?.positions ?? []
+  const bridges = sim.state?.bridges ?? []
+  const telemetry = sim.state?.telemetry ?? null
 
-  const currentTime = tick
+  const storm = useMemo<StormHud>(() => {
+    if (!telemetry) {
+      return { label: '—', windMph: 0, category: 0 }
+    }
+    return {
+      label: telemetry.category_label,
+      windMph: telemetry.wind_speed_mph,
+      category: telemetry.category,
+    }
+  }, [telemetry])
 
-  const storm = useMemo(() => stormAtTick(tick), [tick])
+  const evacuationPct = telemetry?.evacuation_percent ?? 0
 
-  const evacuationPct = useMemo(
-    () => Math.min(98, 38 + tick * 2.1 + (tick > 8 ? 8 : 0)),
-    [tick],
-  )
+  const missionDeadline = useMemo(() => {
+    const raw = sim.handshake?.mission_deadline_utc
+    if (!raw) return null
+    return new Date(raw)
+  }, [sim.handshake?.mission_deadline_utc])
+
+  const simulationClockUtc = sim.state?.simulation_clock_utc ?? null
+  const serverTimeUtc = sim.state?.server_time_utc ?? null
+  const environmentState = sim.state?.environment_state ?? null
 
   const appendLog = useCallback((level: A2ALogLevel, text: string) => {
     const entry: A2ALogEntry = {
@@ -100,15 +118,15 @@ export function C2Provider({ children }: { children: ReactNode }) {
 
   const setTick = useCallback(
     (t: number) => {
-      const next = Math.max(0, Math.min(TICK_COUNT - 1, t))
-      setTickState(next)
+      const max = Math.max(0, tickCount - 1)
+      sim.sendControl('set_tick', Math.max(0, Math.min(max, Math.round(t))))
     },
-    [],
+    [sim, tickCount],
   )
 
   const togglePlay = useCallback(() => {
-    setPlaying((p) => !p)
-  }, [])
+    sim.sendControl(playing ? 'pause' : 'play')
+  }, [sim, playing])
 
   const drillZone = useCallback(
     (zone: ZoneFilter) => {
@@ -118,8 +136,10 @@ export function C2Provider({ children }: { children: ReactNode }) {
         return
       }
       const ids = new Set<number>()
+      const ti = Math.min(tick, Math.max(0, tickCount - 1))
       trips.forEach((tr) => {
-        const [lon, lat] = tr.path[Math.min(tick, tr.path.length - 1)]
+        const idx = Math.min(ti, tr.path.length - 1)
+        const [lon, lat] = tr.path[idx]
         if (
           lon >= zone.minLon &&
           lon <= zone.maxLon &&
@@ -132,7 +152,7 @@ export function C2Provider({ children }: { children: ReactNode }) {
       setHighlightedAgentIds(ids)
       appendLog('system', `ZONE_DRILL: ${ids.size} resident agents in bbox`)
     },
-    [appendLog, tick, trips],
+    [appendLog, tick, tickCount, trips],
   )
 
   const clearZone = useCallback(() => {
@@ -140,34 +160,32 @@ export function C2Provider({ children }: { children: ReactNode }) {
     setHighlightedAgentIds(null)
   }, [])
 
+  const connectLogged = useRef(false)
   useEffect(() => {
-    if (!playing) return
-    const id = window.setInterval(() => {
-      setTickState((t) => {
-        if (t >= TICK_COUNT - 1) {
-          return TICK_COUNT - 1
-        }
-        return t + 1
-      })
-    }, 1100)
-    return () => window.clearInterval(id)
-  }, [playing])
-
-  useEffect(() => {
-    appendLog('system', 'JSON-RPC 2.0 transport online · warden.discover')
-  }, [appendLog])
+    if (sim.connected && !connectLogged.current) {
+      connectLogged.current = true
+      appendLog('system', 'WebSocket connected · simulation stream')
+    }
+    if (!sim.connected) connectLogged.current = false
+  }, [sim.connected, appendLog])
 
   const value = useMemo<C2Value>(
     () => ({
+      connected: sim.connected,
       tick,
-      currentTime,
+      tickCount,
+      tickHours,
+      currentTime: tick,
       playing,
       trips,
       bridges,
+      telemetry,
       storm,
       evacuationPct,
       missionDeadline,
-      simEpochUtc,
+      simulationClockUtc,
+      serverTimeUtc,
+      environmentState,
       logs,
       selectedZone,
       highlightedAgentIds,
@@ -180,15 +198,20 @@ export function C2Provider({ children }: { children: ReactNode }) {
       clearZone,
     }),
     [
+      sim.connected,
       tick,
-      currentTime,
+      tickCount,
+      tickHours,
       playing,
       trips,
       bridges,
+      telemetry,
       storm,
       evacuationPct,
       missionDeadline,
-      simEpochUtc,
+      simulationClockUtc,
+      serverTimeUtc,
+      environmentState,
       logs,
       selectedZone,
       highlightedAgentIds,

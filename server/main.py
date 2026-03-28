@@ -1,16 +1,12 @@
 """
-Sentinel-Net: Tampa Bay — FastAPI entry.
-
-The Mesa `TampaBayModel` lives on `app.state.model` so WebSocket clients can peek at
-simulation state (e.g. coordinates for deck.gl TripsLayer). Each loop iteration runs
-one Mesa `step()`, representing **12 simulated hours** (the disaster-response heartbeat).
-Wall-clock pacing is controlled by `SIM_HEARTBEAT_SECONDS`.
+Sentinel-Net: Tampa Bay — FastAPI + Mesa with bidirectional WebSocket simulation control.
 """
 
 from __future__ import annotations
 
 import asyncio
 import contextlib
+import json
 import os
 from contextlib import asynccontextmanager
 from typing import Any
@@ -19,6 +15,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 
 from simulation.model import TampaBayModel
+from simulation.state_payload import build_handshake, build_simulation_state
 
 load_dotenv()
 
@@ -26,7 +23,7 @@ SIM_HEARTBEAT_SECONDS = float(os.getenv("SIM_HEARTBEAT_SECONDS", "2"))
 
 
 class WebSocketHub:
-    """Broadcast JSON messages to all connected simulation subscribers (decoupled fan-out)."""
+    """Broadcast JSON to all simulation subscribers."""
 
     def __init__(self) -> None:
         self._connections: set[WebSocket] = set()
@@ -49,20 +46,17 @@ class WebSocketHub:
             self._connections.discard(ws)
 
 
-async def simulation_tick_loop(app: FastAPI) -> None:
-    """Advance Mesa by one 12-hour step on each heartbeat; stream state to WebSockets."""
-    model: TampaBayModel = app.state.model
-    hub: WebSocketHub = app.state.ws_hub
+async def simulation_runner(app: FastAPI) -> None:
+    """Advance Mesa when `app.state.playing` is true; stream full state."""
     while True:
         await asyncio.sleep(SIM_HEARTBEAT_SECONDS)
+        if not getattr(app.state, "playing", False):
+            continue
+        model: TampaBayModel = app.state.model
+        hub: WebSocketHub = app.state.ws_hub
         model.step()
         await hub.broadcast_json(
-            {
-                "type": "simulation_tick",
-                "tick_hours": model.tick_hours,
-                "simulated_hours_elapsed": model.simulated_hours_elapsed,
-                "positions": model.snapshot_positions(),
-            }
+            build_simulation_state(model, app.state.playing),
         )
 
 
@@ -70,7 +64,8 @@ async def simulation_tick_loop(app: FastAPI) -> None:
 async def lifespan(app: FastAPI):
     app.state.model = TampaBayModel()
     app.state.ws_hub = WebSocketHub()
-    tick_task = asyncio.create_task(simulation_tick_loop(app))
+    app.state.playing = False
+    tick_task = asyncio.create_task(simulation_runner(app))
     app.state._tick_task = tick_task
     yield
     tick_task.cancel()
@@ -86,21 +81,43 @@ async def health() -> dict[str, str]:
     return {"status": "ok", "service": "sentinel-net-tampa-bay"}
 
 
+async def _handle_control(app: FastAPI, raw: str) -> None:
+    try:
+        msg = json.loads(raw)
+    except json.JSONDecodeError:
+        return
+    if msg.get("type") != "control":
+        return
+    action = msg.get("action")
+    model: TampaBayModel = app.state.model
+    hub: WebSocketHub = app.state.ws_hub
+
+    if action == "play":
+        app.state.playing = True
+    elif action == "pause":
+        app.state.playing = False
+    elif action == "set_tick":
+        tick = int(msg.get("tick", 0))
+        app.state.playing = False
+        model.set_tick_index(tick)
+    else:
+        return
+
+    await hub.broadcast_json(build_simulation_state(model, app.state.playing))
+
+
 @app.websocket("/ws/simulation")
 async def simulation_socket(websocket: WebSocket) -> None:
     hub: WebSocketHub = websocket.app.state.ws_hub
     model: TampaBayModel = websocket.app.state.model
     await hub.connect(websocket)
     try:
+        await websocket.send_json(build_handshake(model))
         await websocket.send_json(
-            {
-                "type": "connected",
-                "tick_hours": model.tick_hours,
-                "simulated_hours_elapsed": model.simulated_hours_elapsed,
-                "message": "Streaming simulation heartbeats (12h per Mesa step).",
-            }
+            build_simulation_state(model, websocket.app.state.playing),
         )
         while True:
-            await websocket.receive_text()
+            raw = await websocket.receive_text()
+            await _handle_control(websocket.app, raw)
     except WebSocketDisconnect:
         hub.disconnect(websocket)

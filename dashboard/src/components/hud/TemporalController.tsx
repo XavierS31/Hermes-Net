@@ -1,5 +1,4 @@
 import { Pause, Play } from 'lucide-react'
-import { TICK_COUNT } from '../../data/mockSimulation'
 import { useC2 } from '../../context/C2Context'
 import { SN } from '../../theme/tokens'
 
@@ -10,7 +9,10 @@ function tickLabel(i: number) {
 }
 
 export function TemporalController() {
-  const { tick, setTick, playing, togglePlay } = useC2()
+  const { tick, tickCount, tickHours, setTick, togglePlay, playing } = useC2()
+
+  const maxIdx = Math.max(1, tickCount - 1)
+  const pct = maxIdx > 0 ? (tick / maxIdx) * 100 : 0
 
   return (
     <div
@@ -23,7 +25,7 @@ export function TemporalController() {
     >
       <div className="flex items-center justify-between gap-3">
         <span className="text-[9px] uppercase tracking-[0.3em] text-zinc-500">
-          Temporal · 7d / 12h heartbeat
+          Temporal · {tickHours}h heartbeat · server sync
         </span>
         <button
           type="button"
@@ -51,26 +53,29 @@ export function TemporalController() {
         <input
           type="range"
           min={0}
-          max={TICK_COUNT - 1}
+          max={Math.max(0, tickCount - 1)}
           step={1}
-          value={tick}
+          value={Math.min(tick, Math.max(0, tickCount - 1))}
           onChange={(e) => setTick(Number(e.target.value))}
           className="h-2 flex-1 cursor-pointer appearance-none rounded-full accent-cyan-400"
           style={{
-            background: `linear-gradient(90deg, ${SN.cyan} 0%, ${SN.cyan} ${(tick / (TICK_COUNT - 1)) * 100}%, rgba(255,255,255,0.08) ${(tick / (TICK_COUNT - 1)) * 100}%, rgba(255,255,255,0.08) 100%)`,
+            background: `linear-gradient(90deg, ${SN.cyan} 0%, ${SN.cyan} ${pct}%, rgba(255,255,255,0.08) ${pct}%, rgba(255,255,255,0.08) 100%)`,
           }}
           aria-label="Simulation heartbeat"
         />
-        <span className="w-24 shrink-0 text-right tabular-nums text-zinc-300">
-          HB {tick + 1}/{TICK_COUNT} · {tickLabel(tick)}
+        <span className="w-28 shrink-0 text-right tabular-nums text-zinc-300">
+          HB {tick + 1}/{tickCount} · {tickLabel(tick)}
         </span>
       </div>
       <div className="flex justify-between text-[9px] text-zinc-600">
-        {Array.from({ length: TICK_COUNT }, (_, i) => (
+        {Array.from({ length: tickCount }, (_, i) => (
           <span
             key={i}
             className={i === tick ? 'text-cyan-400' : ''}
-            style={{ width: `${100 / TICK_COUNT}%`, textAlign: 'center' }}
+            style={{
+              width: `${100 / Math.max(1, tickCount)}%`,
+              textAlign: 'center',
+            }}
           >
             {i % 2 === 0 ? `D${i / 2}` : ''}
           </span>

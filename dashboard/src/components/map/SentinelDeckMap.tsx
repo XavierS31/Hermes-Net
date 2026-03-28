@@ -7,14 +7,12 @@ import 'mapbox-gl/dist/mapbox-gl.css'
 import type { MapMouseEvent, ViewState } from 'react-map-gl/mapbox'
 import type { PickingInfo } from '@deck.gl/core'
 import { useC2 } from '../../context/C2Context'
-import {
-  hurricaneTracks,
-  surgePolygons,
-  tripColor,
-  type TripDatum,
-} from '../../data/mockSimulation'
+import { tripColor, type TripDatum } from '../../data/simulationTypes'
 import { createBridgeIconAtlas } from '../../lib/bridgeIconAtlas'
-import { MAP_STYLE } from '../../theme/tokens'
+
+const MAP_STYLE =
+  (import.meta.env.VITE_MAPBOX_STYLE as string | undefined) ??
+  'mapbox://styles/mapbox/satellite-streets-v12'
 
 const INITIAL_VIEW: ViewState = {
   longitude: -82.45,
@@ -36,6 +34,7 @@ export function SentinelDeckMap({ className }: SentinelDeckMapProps) {
     currentTime,
     trips,
     bridges,
+    environmentState,
     highlightedAgentIds,
     setHoverBridgeId,
     drillZone,
@@ -60,20 +59,9 @@ export function SentinelDeckMap({ className }: SentinelDeckMapProps) {
     }))
   }, [tick])
 
-  const { main: hurricaneMain, ghost: hurricaneGhost } = useMemo(
-    () => hurricaneTracks(),
-    [],
-  )
-  const surge = useMemo(() => surgePolygons(), [])
-
-  const bridgeData = useMemo(
-    () =>
-      bridges.map((b) => ({
-        ...b,
-        windMph: Math.min(165, Math.round(b.windMph + tick * 1.8)),
-      })),
-    [bridges, tick],
-  )
+  const hurricaneMain = environmentState?.hurricane_main ?? []
+  const hurricaneGhost = environmentState?.hurricane_ghost ?? []
+  const surge = environmentState?.surge_polygons ?? []
 
   const layers = useMemo(() => {
     const tripLayer = new TripsLayer<TripDatum>({
@@ -96,91 +84,101 @@ export function SentinelDeckMap({ className }: SentinelDeckMapProps) {
       currentTime,
       fadeTrail: true,
       updateTriggers: {
-        getColor: [highlightedAgentIds, tick],
+        getColor: [highlightedAgentIds, trips],
       },
     })
 
-    const coneOuter = new PathLayer<{ path: [number, number][] }>({
-      id: 'hurricane-cone-outer',
-      data: [{ path: hurricaneMain }],
-      getPath: (d) => d.path,
-      getColor: [0, 245, 255, 55],
-      getWidth: 62,
-      widthUnits: 'pixels',
-      capRounded: true,
-      jointRounded: true,
-    })
+    const coneOuter =
+      hurricaneMain.length > 0
+        ? new PathLayer<{ path: [number, number][] }>({
+            id: 'hurricane-cone-outer',
+            data: [{ path: hurricaneMain }],
+            getPath: (d) => d.path,
+            getColor: [0, 245, 255, 55],
+            getWidth: 62,
+            widthUnits: 'pixels',
+            capRounded: true,
+            jointRounded: true,
+          })
+        : null
 
-    const coneInner = new PathLayer<{ path: [number, number][] }>({
-      id: 'hurricane-cone-inner',
-      data: [{ path: hurricaneMain }],
-      getPath: (d) => d.path,
-      getColor: [0, 245, 255, 200],
-      getWidth: 6,
-      widthUnits: 'pixels',
-      capRounded: true,
-      jointRounded: true,
-    })
+    const coneInner =
+      hurricaneMain.length > 0
+        ? new PathLayer<{ path: [number, number][] }>({
+            id: 'hurricane-cone-inner',
+            data: [{ path: hurricaneMain }],
+            getPath: (d) => d.path,
+            getColor: [0, 245, 255, 200],
+            getWidth: 6,
+            widthUnits: 'pixels',
+            capRounded: true,
+            jointRounded: true,
+          })
+        : null
 
-    const ghostTrack = new PathLayer<{ path: [number, number][] }>({
-      id: 'hurricane-ghost',
-      data: [{ path: hurricaneGhost }],
-      getPath: (d) => d.path,
-      getColor: [255, 191, 0, 160],
-      getWidth: 3,
-      widthUnits: 'pixels',
-      capRounded: true,
-      jointRounded: true,
-    })
+    const ghostTrack =
+      hurricaneGhost.length > 0
+        ? new PathLayer<{ path: [number, number][] }>({
+            id: 'hurricane-ghost',
+            data: [{ path: hurricaneGhost }],
+            getPath: (d) => d.path,
+            getColor: [255, 191, 0, 160],
+            getWidth: 3,
+            widthUnits: 'pixels',
+            capRounded: true,
+            jointRounded: true,
+          })
+        : null
 
-    const surgeLayer = new PolygonLayer<{
-      polygon: [number, number][]
-      heightFt: number
-    }>({
-      id: 'surge-extrusion',
-      data: surge,
-      extruded: true,
-      wireframe: false,
-      getPolygon: (d) => d.polygon,
-      getElevation: (d) => d.heightFt * 0.3048,
-      getFillColor: [0, 245, 255, 165],
-      material: {
-        ambient: 0.35,
-        diffuse: 0.65,
-        shininess: 32,
-        specularColor: [0, 180, 255],
-      },
-      updateTriggers: {
-        getElevation: [tick],
-      },
-    })
+    const surgeLayer =
+      surge.length > 0
+        ? new PolygonLayer<{
+            polygon: [number, number][]
+            height_ft: number
+          }>({
+            id: 'surge-extrusion',
+            data: surge,
+            extruded: true,
+            wireframe: false,
+            getPolygon: (d) => d.polygon,
+            getElevation: (d) => d.height_ft * 0.3048,
+            getFillColor: [0, 245, 255, 165],
+            material: {
+              ambient: 0.35,
+              diffuse: 0.65,
+              shininess: 32,
+              specularColor: [0, 180, 255],
+            },
+          })
+        : null
 
-    const bridgeIconLayer = atlas?.url
-      ? new IconLayer<{
-          id: string
-          name: string
-          position: [number, number]
-          windMph: number
-        }>({
-          id: 'infrastructure-bridges',
-          data: bridgeData,
-          pickable: true,
-          sizeUnits: 'pixels',
-          iconAtlas: atlas.url,
-          iconMapping: atlas.mapping,
-          getIcon: (d) => (d.windMph > 45 ? 'closed' : 'bridge'),
-          getPosition: (d) => d.position,
-          getSize: 44,
-          getColor: (d) =>
-            d.windMph > 45 ? [255, 0, 51, 255] : [0, 245, 255, 255],
-        })
-      : null
+    const bridgeIconLayer =
+      atlas?.url && bridges.length > 0
+        ? new IconLayer<{
+            id: string
+            name: string
+            position: [number, number]
+            wind_mph: number
+          }>({
+            id: 'infrastructure-bridges',
+            data: bridges,
+            pickable: true,
+            sizeUnits: 'pixels',
+            iconAtlas: atlas.url,
+            iconMapping: atlas.mapping,
+            getIcon: (d) => (d.wind_mph > 45 ? 'closed' : 'bridge'),
+            getPosition: (d) => d.position,
+            getSize: 44,
+            getColor: (d) =>
+              d.wind_mph > 45 ? [255, 0, 51, 255] : [0, 245, 255, 255],
+          })
+        : null
 
     return [
-      surgeLayer,
-      coneOuter,
-      coneInner,
-      ghostTrack,
+      ...(surgeLayer ? [surgeLayer] : []),
+      ...(coneOuter ? [coneOuter] : []),
+      ...(coneInner ? [coneInner] : []),
+      ...(ghostTrack ? [ghostTrack] : []),
       tripLayer,
       ...(bridgeIconLayer ? [bridgeIconLayer] : []),
     ]
@@ -189,7 +187,7 @@ export function SentinelDeckMap({ className }: SentinelDeckMapProps) {
     hurricaneMain,
     hurricaneGhost,
     surge,
-    bridgeData,
+    bridges,
     currentTime,
     highlightedAgentIds,
     tick,
@@ -207,10 +205,10 @@ export function SentinelDeckMap({ className }: SentinelDeckMapProps) {
 
   const onDeckClick = (info: PickingInfo) => {
     if (info.layer?.id === 'infrastructure-bridges' && info.object) {
-      const o = info.object as { name: string; windMph: number }
+      const o = info.object as { name: string; wind_mph: number }
       appendLog(
         'alert',
-        `BRIDGE · ${o.name} · wind ${o.windMph} mph — closure check`,
+        `BRIDGE · ${o.name} · wind ${o.wind_mph} mph — closure check`,
       )
       return true
     }

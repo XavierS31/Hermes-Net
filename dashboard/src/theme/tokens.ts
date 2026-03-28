@@ -8,6 +8,3 @@ export const SN = {
   grey: '#767576',
   border: 'rgba(0, 245, 255, 0.18)',
 } as const
-
-export const MAP_STYLE =
-  'mapbox://styles/mapbox/satellite-streets-v12' as const

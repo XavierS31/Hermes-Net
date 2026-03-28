@@ -1,14 +1,19 @@
 import { LayoutDashboard, Radar, Timer } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import hermesLogo from '../../assets/HermesNET.png'
 import { useC2 } from '../../context/C2Context'
 import { SN } from '../../theme/tokens'
 
-function formatUtc(d: Date) {
+function formatDisplayUtc(iso: string | null) {
+  if (!iso) return '—'
+  const normalized = iso.includes('T') ? iso : iso.replace(' ', 'T')
+  const d = new Date(normalized.endsWith('Z') ? normalized : `${normalized}Z`)
+  if (Number.isNaN(d.getTime())) return iso
   return d.toISOString().replace('T', ' ').slice(0, 19)
 }
 
 export function TopBar() {
-  const { missionDeadline, simEpochUtc, tick } = useC2()
+  const { missionDeadline, simulationClockUtc } = useC2()
   const [nowTick, setNowTick] = useState(0)
 
   useEffect(() => {
@@ -17,7 +22,12 @@ export function TopBar() {
   }, [])
 
   const tMinus = useMemo(() => {
-    const s = Math.max(0, Math.floor((missionDeadline.getTime() - Date.now()) / 1000))
+    if (!missionDeadline) return '—:—:—'
+    void nowTick
+    const s = Math.max(
+      0,
+      Math.floor((missionDeadline.getTime() - Date.now()) / 1000),
+    )
     const h = Math.floor(s / 3600)
     const m = Math.floor((s % 3600) / 60)
     const sec = s % 60
@@ -25,27 +35,25 @@ export function TopBar() {
   }, [missionDeadline, nowTick])
 
   const simClock = useMemo(() => {
-    const ms = simEpochUtc.getTime() + tick * 12 * 3600 * 1000
-    return formatUtc(new Date(ms))
-  }, [simEpochUtc, tick])
+    return formatDisplayUtc(simulationClockUtc)
+  }, [simulationClockUtc])
 
   return (
     <header
       className="pointer-events-auto absolute left-0 right-0 top-0 z-30 flex items-center justify-between gap-4 border-b px-5 py-3 font-mono text-[11px] tracking-wide"
       style={{
         borderColor: SN.border,
-        background: 'rgba(11, 11, 12, 0.72)',
-        backdropFilter: 'blur(22px)',
+        background: SN.bg,
         color: '#e4e4e7',
       }}
     >
-      <div className="flex flex-col gap-0.5">
-        <span
-          className="text-[10px] font-semibold tracking-[0.35em]"
-          style={{ color: SN.cyan }}
-        >
-          SENTINEL-NET: TAMPA BAY
-        </span>
+      <div className="flex min-w-0 flex-col gap-1">
+        <img
+          src={hermesLogo}
+          alt="HermesNET"
+          className="h-9 w-auto max-w-[min(300px,60w)] object-contain object-left sm:h-10 md:h-11"
+          draggable={false}
+        />
         <span className="text-[9px] uppercase text-zinc-500">
           Tactical C2 · Evacuation sim
         </span>
@@ -60,7 +68,7 @@ export function TopBar() {
             className="text-lg font-semibold tabular-nums"
             style={{ color: SN.amber }}
           >
-            T-{tMinus}
+            {missionDeadline ? `T-${tMinus}` : 'T-—'}
           </span>
         </div>
         <div className="h-8 w-px bg-white/10" aria-hidden />
