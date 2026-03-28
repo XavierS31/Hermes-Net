@@ -1,0 +1,12 @@
+# Sentinel-Net: Tampa Bay — Python 3.10+
+# Mesa 2.x: provides SimultaneousActivation (Mesa 3 removed the classic scheduler API)
+mesa>=2.3.0,<3
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+websockets>=13.0
+google-cloud-aiplatform>=1.70.0
+pydantic>=2.0.0
+numpy>=1.26.0
+pandas>=2.0.0
+shapely>=2.0.0
+python-dotenv>=1.0.0

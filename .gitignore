@@ -19,3 +19,8 @@ build/
 *.swp
 Thumbs.db
 .DS_Store
+
+# Node / frontend
+node_modules/
+dashboard/node_modules/
+*.local

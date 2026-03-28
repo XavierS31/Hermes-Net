@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "sentinel-net.tampa.warden",
+  "version": "0.1.0",
+  "description": "Strategic coordination agent for Tampa Bay disaster response; discoverable by meteorologist and field agents via ADK Agent Cards.",
+  "url": "https://api.sentinel-net.local/a2a/warden",
+  "preferredTransport": "JSONRPC",
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": true,
+    "extensions": ["geojson", "storm_track_ingest", "resource_allocation"]
+  },
+  "skills": [
+    {
+      "id": "allocate_resources",
+      "name": "Allocate emergency resources",
+      "description": "Assign crews and supplies using Gemini 1.5 strategic reasoning over Mesa simulation state.",
+      "tags": ["logistics", "vertex_ai"]
+    }
+  ],
+  "metadata": {
+    "region": "US-FL-TampaBay",
+    "role": "warden",
+    "modelHint": "gemini-1.5-pro"
+  }
+}
