@@ -52,8 +52,8 @@ export default function LeftPanel() {
       // Fallback: mock zones for development
       const mockZones = getMockSafeZones(hurricane)
       setSafeZones(mockZones)
-      setSafeZonesError('Backend offline — using mock zones')
-      addLog('Using mock safe zones (backend offline)', 'warning')
+      //setSafeZonesError('Backend offline — using mock zones')
+      //addLog('Using mock safe zones (backend offline)', 'warning')
     } finally {
       setSafeZonesLoading(false)
     }
