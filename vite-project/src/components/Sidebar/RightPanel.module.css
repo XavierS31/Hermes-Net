@@ -195,6 +195,16 @@
   font-size: 9px;
 }
 
+/* White silhouette PNGs: no filter — keeps outline strokes and inner transparent “gaps” */
+.supplyIcon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  object-position: center;
+  flex-shrink: 0;
+  display: block;
+}
+
 .supplyLabel {
   color: var(--text-muted);
 }

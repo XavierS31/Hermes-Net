@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useSimStore } from '../../store/simulationStore'
 import AgentCard from './AgentCard'
+import iconFood from '../../assets/food.png'
+import iconWater from '../../assets/water.png'
+import iconMedical from '../../assets/medical.png'
 import styles from './RightPanel.module.css'
 
 const TABS = ['AGENTS', 'ZONES', 'LOGS']
@@ -105,9 +108,9 @@ export default function RightPanel() {
                       <div className={styles.zoneFill} style={{ width: `${fillPct}%`, background: fillColor }} />
                     </div>
                     <div className={styles.supplies}>
-                      <Supply icon="🍎" label="Food" value={zone.supplies?.food} />
-                      <Supply icon="💧" label="Water" value={zone.supplies?.water} />
-                      <Supply icon="🏥" label="Medical" value={zone.supplies?.medical} />
+                      <Supply iconSrc={iconFood} label="Food" value={zone.supplies?.food} />
+                      <Supply iconSrc={iconWater} label="Water" value={zone.supplies?.water} />
+                      <Supply iconSrc={iconMedical} label="Medical" value={zone.supplies?.medical} />
                     </div>
                     {zone.reasoning && (
                       <div className={styles.reasoning}>AI: {zone.reasoning}</div>
@@ -148,10 +151,17 @@ function CountBadge({ label, count, color }) {
   )
 }
 
-function Supply({ icon, label, value }) {
+function Supply({ iconSrc, label, value }) {
   return (
     <div className={styles.supply}>
-      <span>{icon}</span>
+      <img
+        src={iconSrc}
+        alt=""
+        className={styles.supplyIcon}
+        width={16}
+        height={16}
+        decoding="async"
+      />
       <span className={styles.supplyLabel}>{label}</span>
       <span className={styles.supplyVal}>{value ?? '—'}</span>
     </div>
