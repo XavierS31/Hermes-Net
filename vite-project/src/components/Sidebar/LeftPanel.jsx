@@ -150,7 +150,7 @@ export default function LeftPanel() {
           {safeZonesLoading ? (
             <><Spinner /> ANALYZING PATH...</>
           ) : (
-            <>{safeZones.length > 0 ? '↻ REGENERATE' : '⚡ GENERATE'} SAFE ZONES</>
+            <>{safeZones.length > 0 ? '↻ REGENERATE' : 'GENERATE'} SAFE ZONES</>
           )}
         </button>
 

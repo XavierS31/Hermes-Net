@@ -1,5 +1,6 @@
 import { useSimStore } from '../../store/simulationStore'
 import { useHurricane } from '../../hooks/useHurricane'
+import hermesLogo from '../../assets/hermeslogo.png'
 import styles from './StatusBar.module.css'
 
 const CATEGORY_LABELS = {
@@ -19,7 +20,6 @@ export default function StatusBar() {
   const arrived   = agents.filter(a => a.status === 'arrived').length
   const evacuating = agents.filter(a => a.status === 'evacuating').length
   const stranded  = agents.filter(a => a.status === 'stranded').length
-  const total     = agents.length
 
   const statusLabel = {
     idle: 'STANDBY',
@@ -41,8 +41,9 @@ export default function StatusBar() {
     <div className={styles.bar}>
       {/* Left — system identity */}
       <div className={styles.left}>
-        <div className={styles.logo}>⚡ HURRICANE EVAC COMMAND</div>
-        <div className={styles.sub}>Tampa Bay Emergency Management System</div>
+        <div className={styles.brand}>
+          <img src={hermesLogo} alt="Hermes" className={styles.logoImg} width={320} height={48} decoding="async" />
+        </div>
       </div>
 
       {/* Center — storm info */}

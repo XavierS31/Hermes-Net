@@ -14,6 +14,17 @@ import styles            from './MapView.module.css'
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 
 export default function MapView() {
+  if (!MAPBOX_TOKEN) {
+    return (
+      <div className={styles.mapWrap} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, textAlign: 'center' }}>
+        <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: 13, maxWidth: 420, lineHeight: 1.6 }}>
+          Mapbox is not configured. Add <code style={{ color: 'var(--accent-cyan)' }}>VITE_MAPBOX_TOKEN=pk.…</code> to{' '}
+          <code style={{ color: 'var(--accent-cyan)' }}>vite-project/.env</code> and restart Vite (<code style={{ color: 'var(--accent-cyan)' }}>npm run dev</code>).
+        </p>
+      </div>
+    )
+  }
+
   const pickingMode           = useSimStore(s => s.pickingMode)
   const setPickingMode        = useSimStore(s => s.setPickingMode)
   const updateHurricaneCustom = useSimStore(s => s.updateHurricaneCustom)
@@ -89,6 +100,7 @@ export default function MapView() {
         cursor={pickingMode ? 'crosshair' : 'grab'}
         maxPitch={85}
         onLoad={handleLoad}
+        onError={(e) => console.error('[MapView]', e.error)}
       >
         <NavigationControl position="bottom-right" visualizePitch={true} />
 

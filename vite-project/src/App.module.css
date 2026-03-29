@@ -10,6 +10,7 @@
 
 .main {
   flex: 1;
+  min-height: 0;
   display: grid;
   grid-template-columns: 300px 1fr 320px;
   overflow: hidden;
@@ -39,6 +40,8 @@
 .mapContainer {
   position: relative;
   flex: 1;
+  min-height: 0;
+  height: 100%;
   overflow: hidden;
 }
 
