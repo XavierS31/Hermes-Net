@@ -1,5 +1,4 @@
 import asyncio, json, os
-import google.generativeai as genai
 from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,7 +11,6 @@ from simulation.engine import engine
 from simulation.routing import assign_agents_to_zones
 
 load_dotenv()
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 class ConnectionManager:
     def __init__(self):

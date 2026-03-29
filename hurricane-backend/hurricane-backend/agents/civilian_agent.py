@@ -1,5 +1,5 @@
-import json, re
-import google.generativeai as genai
+import json, os, re
+from google import genai
 from simulation.hurricane import haversine_km
 
 def get_agent_decision(agent, hurricane, assigned_zone):
@@ -20,8 +20,8 @@ Return ONLY valid JSON:
 {{"action": "evacuate|shelter_in_place|request_help|redirect", "urgency": "low|medium|high|critical", "reasoning": "one sentence", "message": "short broadcast or null"}}"""
 
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        response = model.generate_content(prompt)
+        client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+        response = client.models.generate_content(model="gemini-1.5-flash", contents=prompt)
         text = re.sub(r"```json\s*|```\s*", "", response.text.strip()).strip()
         data = json.loads(text)
         data["agent_id"] = agent["id"]

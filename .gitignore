@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Python
 __pycache__/
 *.py[cod]
@@ -25,6 +24,4 @@ Thumbs.db
 node_modules/
 dashboard/node_modules/
 *.local
-=======
 .env
->>>>>>> 24af4cbcb8d8d1c7c367a75fde4e236bcd349db9

@@ -1,5 +1,5 @@
-import json, re
-import google.generativeai as genai
+import json, os, re
+from google import genai
 from simulation.hurricane import build_control_points, get_path_sample_points
 
 def generate_safe_zones(origin_lng, origin_lat, dest_lng, dest_lat, category, wind_speed):
@@ -38,8 +38,8 @@ Return ONLY valid JSON, no markdown:
 }}"""
 
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        response = model.generate_content(prompt)
+        client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+        response = client.models.generate_content(model="gemini-1.5-flash", contents=prompt)
         text = re.sub(r"```json\s*|```\s*", "", response.text.strip()).strip()
         data = json.loads(text)
         zones = data.get("safe_zones", [])

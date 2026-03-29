@@ -1,5 +1,5 @@
-import json, re
-import google.generativeai as genai
+import json, os, re
+from google import genai
 
 def get_coordinator_assessment(agents, safe_zones, hurricane, elapsed_hours):
     total     = len(agents)
@@ -24,8 +24,8 @@ Return ONLY valid JSON:
 {{"overall_status": "on_track|at_risk|critical", "alerts": ["alert1"], "recommendations": ["action1"], "broadcast": "max 15 word message to all agents"}}"""
 
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        response = model.generate_content(prompt)
+        client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+        response = client.models.generate_content(model="gemini-1.5-flash", contents=prompt)
         text = re.sub(r"```json\s*|```\s*", "", response.text.strip()).strip()
         return json.loads(text)
     except Exception:
