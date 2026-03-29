@@ -89,12 +89,16 @@ export function useSimulation() {
   }, [store.status, store.speed])
 
   // ── Start simulation ───────────────────────────────────────
-  const startSimulation = () => {
+  const startSimulation = async () => {
     const state = useSimStore.getState()
     if (state.safeZones.length === 0) {
       alert('Generate safe zones first.')
       return
     }
+
+    // Show loading state while road routes are fetched
+    useSimStore.setState({ status: 'generating' })
+    useSimStore.getState().addLog('Fetching road routes via Mapbox…', 'info')
 
     // Spawn agents if none exist
     let { agents } = state
@@ -103,8 +107,9 @@ export function useSimulation() {
       agents = useSimStore.getState().agents
     }
 
-    // Assign agents to zones
-    const assignments = assignAgentsToZones(agents, state.safeZones)
+    // Assign agents to zones — async: fetches real road geometry per agent
+    const assignments = await assignAgentsToZones(agents, useSimStore.getState().safeZones)
+
     const assignedAgents = agents.map(agent => {
       const a = assignments.find(x => x.agentId === agent.id)
       return a

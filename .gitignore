@@ -25,3 +25,4 @@ node_modules/
 dashboard/node_modules/
 *.local
 .env
+hurricane-backend/hurricane-backend/.env

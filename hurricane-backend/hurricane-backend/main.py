@@ -11,6 +11,12 @@ from simulation.engine import engine
 from simulation.routing import assign_agents_to_zones
 
 load_dotenv()
+<<<<<<< HEAD
+=======
+# google-adk reads GOOGLE_API_KEY; support legacy GEMINI_API_KEY as fallback
+if not os.environ.get("GOOGLE_API_KEY"):
+    os.environ["GOOGLE_API_KEY"] = os.getenv("GEMINI_API_KEY", "")
+>>>>>>> 40d8313db30ab9bd85728431ffdccc5835d59e5c
 
 class ConnectionManager:
     def __init__(self):
@@ -39,7 +45,7 @@ async def health():
 
 @app.post("/api/generate-safe-zones")
 async def api_generate_safe_zones(payload: HurricaneInput):
-    zones = generate_safe_zones(payload.origin_lng, payload.origin_lat, payload.dest_lng, payload.dest_lat, payload.category, payload.wind_speed)
+    zones = await generate_safe_zones(payload.origin_lng, payload.origin_lat, payload.dest_lng, payload.dest_lat, payload.category, payload.wind_speed)
     return {"safe_zones": zones}
 
 @app.post("/api/start-simulation")
@@ -52,7 +58,7 @@ async def api_start_simulation(payload: SimulationStartInput):
     safe_zones = payload.safe_zones
     hurricane  = payload.hurricane
 
-    assignments = assign_agents_to_zones(agents_raw, safe_zones)
+    assignments = await assign_agents_to_zones(agents_raw, safe_zones)
     assignment_map = {a["agent_id"]: a for a in assignments}
 
     agents_assigned = []
@@ -60,7 +66,7 @@ async def api_start_simulation(payload: SimulationStartInput):
         asgn = assignment_map.get(agent["id"], {})
         agents_assigned.append({**agent, "assignedZoneId": asgn.get("zone_id"), "route": asgn.get("route"), "distanceKm": asgn.get("distance_km"), "etaHours": asgn.get("eta_hours"), "status": asgn.get("status", "waiting"), "progress": 0.0})
 
-    decisions = get_batch_decisions(agents_assigned, hurricane, safe_zones)
+    decisions = await get_batch_decisions(agents_assigned, hurricane, safe_zones)
     decision_map = {d["agent_id"]: d for d in decisions}
     for agent in agents_assigned:
         action = decision_map.get(agent["id"], {}).get("action", "evacuate")
@@ -98,7 +104,7 @@ async def api_state():
 
 @app.post("/api/coordinator-check")
 async def api_coordinator_check():
-    assessment = get_coordinator_assessment(engine.agents, engine.safe_zones, engine.hurricane or {}, engine.elapsed_hours)
+    assessment = await get_coordinator_assessment(engine.agents, engine.safe_zones, engine.hurricane or {}, engine.elapsed_hours)
     await manager.broadcast({"type": "coordinator_assessment", **assessment})
     for alert in assessment.get("alerts", []):
         await manager.broadcast({"type": "log", "message": f"COORDINATOR: {alert}", "level": "warning"})
