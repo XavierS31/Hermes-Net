@@ -22,99 +22,61 @@ export default function HurricaneLayer() {
   const hurricanePosition = useSimStore(s => s.hurricanePosition)
   const categoryColor     = CATEGORY_COLORS[hurricane.category] ?? '#ff4d4d'
   const animRef           = useRef(null)
+  // Stores a data-update callback that Effect 1 will call once layers exist
+  const pendingUpdateRef  = useRef(null)
 
+  // ── Effect 1: Create layers once per map instance ──────────────
+  // Only re-runs when mainMap changes (not on storm switches).
   useEffect(() => {
     if (!mainMap) return
     const map = mainMap.getMap()
     if (!map) return
 
-    const pts      = buildHurricanePath(hurricane)
-    const fullPath = pathToGeoJSON(pts)
-    const fullCone = buildCone(fullPath)
-    const isCustom = hurricane.id === 'custom'
-
-    // Cancel any running path animation
-    if (animRef.current) { cancelAnimationFrame(animRef.current); animRef.current = null }
-
-    const runAnimation = () => {
-      const allCoords = fullPath.geometry.coordinates
-      let step = 0
-      const animate = () => {
-        step = Math.min(step + 2, allCoords.length)
-        const coords = allCoords.slice(0, Math.max(step, 2))
-        const partial = { ...fullPath, geometry: { type: 'LineString', coordinates: coords } }
-        try {
-          map.getSource('h-path')?.setData(partial)
-          map.getSource('h-cone')?.setData(buildCone(partial))
-        } catch (_) {}
-        if (step < allCoords.length) animRef.current = requestAnimationFrame(animate)
-      }
-      animate()
-    }
-
-    const setup = () => {
+    const init = () => {
+      if (map.getSource('h-path')) return  // already exists
       try {
-        const sourcesExist = !!map.getSource('h-path')
-
-        if (!sourcesExist) {
-          // ── First-time initialization ──────────────────────────
-          map.addSource('h-path', { type: 'geojson', data: isCustom ? EMPTY_LINE : fullPath })
-          map.addLayer({
-            id: 'h-path-line', type: 'line', source: 'h-path',
-            paint: {
-              'line-color':     categoryColor,
-              'line-width':     2.5,
-              'line-dasharray': [5, 3],
-              'line-opacity':   0.85,
-            },
-          })
-          map.addSource('h-cone', { type: 'geojson', data: isCustom ? EMPTY_CONE : fullCone })
-          map.addLayer({
-            id: 'h-cone-fill', type: 'fill', source: 'h-cone',
-            paint: { 'fill-color': categoryColor, 'fill-opacity': 0.07 },
-          })
-          map.addLayer({
-            id: 'h-cone-outline', type: 'line', source: 'h-cone',
-            paint: {
-              'line-color':     categoryColor,
-              'line-width':     1,
-              'line-opacity':   0.35,
-              'line-dasharray': [3, 4],
-            },
-          })
-        } else {
-          // ── Update in place — no remove/re-add needed ──────────
-          map.setPaintProperty('h-path-line',   'line-color', categoryColor)
-          map.setPaintProperty('h-cone-fill',   'fill-color', categoryColor)
-          map.setPaintProperty('h-cone-outline', 'line-color', categoryColor)
-
-          if (isCustom) {
-            map.getSource('h-path').setData(EMPTY_LINE)
-            map.getSource('h-cone').setData(EMPTY_CONE)
-          } else {
-            map.getSource('h-path').setData(fullPath)
-            map.getSource('h-cone').setData(fullCone)
-          }
+        map.addSource('h-path', { type: 'geojson', data: EMPTY_LINE })
+        map.addLayer({
+          id: 'h-path-line', type: 'line', source: 'h-path',
+          paint: {
+            'line-color':     '#ff4d4d',
+            'line-width':     2.5,
+            'line-dasharray': [5, 3],
+            'line-opacity':   0.85,
+          },
+        })
+        map.addSource('h-cone', { type: 'geojson', data: EMPTY_CONE })
+        map.addLayer({
+          id: 'h-cone-fill', type: 'fill', source: 'h-cone',
+          paint: { 'fill-color': '#ff4d4d', 'fill-opacity': 0.07 },
+        })
+        map.addLayer({
+          id: 'h-cone-outline', type: 'line', source: 'h-cone',
+          paint: {
+            'line-color':     '#ff4d4d',
+            'line-width':     1,
+            'line-opacity':   0.35,
+            'line-dasharray': [3, 4],
+          },
+        })
+        // Apply any data update that Effect 2 queued while waiting for layers
+        if (pendingUpdateRef.current) {
+          pendingUpdateRef.current()
+          pendingUpdateRef.current = null
         }
-
-        // Animate custom path drawing
-        if (isCustom) runAnimation()
       } catch (e) {
-        console.warn('HurricaneLayer:', e.message)
+        console.warn('HurricaneLayer init:', e.message)
       }
     }
 
-    // Only re-run setup via styledata if sources were lost (e.g. style reload)
-    const onStyleData = () => {
-      if (map.isStyleLoaded() && !map.getSource('h-path')) setup()
-    }
-
+    // Re-init if sources are lost (e.g. style reload)
+    const onStyleData = () => { if (map.isStyleLoaded()) init() }
     map.on('styledata', onStyleData)
-    if (map.isStyleLoaded()) setup()
-    else map.once('load', setup)
+
+    if (map.isStyleLoaded()) init()
+    else map.once('load', init)
 
     return () => {
-      if (animRef.current) { cancelAnimationFrame(animRef.current); animRef.current = null }
       map.off('styledata', onStyleData)
       ;['h-path-line', 'h-cone-fill', 'h-cone-outline'].forEach(l => {
         try { if (map.getLayer(l)) map.removeLayer(l) } catch (_) {}
@@ -123,9 +85,72 @@ export default function HurricaneLayer() {
         try { if (map.getSource(s)) map.removeSource(s) } catch (_) {}
       })
     }
+  }, [mainMap])  // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Effect 2: Push new data whenever hurricane changes ─────────
+  // Uses setData() only — never touches layer lifecycle.
+  useEffect(() => {
+    if (!mainMap) return
+    const map = mainMap.getMap()
+    if (!map) return
+
+    if (animRef.current) { cancelAnimationFrame(animRef.current); animRef.current = null }
+
+    const pts      = buildHurricanePath(hurricane)
+    const fullPath = pathToGeoJSON(pts)
+    const fullCone = buildCone(fullPath)
+    const isCustom = hurricane.id === 'custom'
+    const color    = CATEGORY_COLORS[hurricane.category] ?? '#ff4d4d'
+
+    const applyUpdate = () => {
+      const pathSrc = map.getSource('h-path')
+      const coneSrc = map.getSource('h-cone')
+      if (!pathSrc || !coneSrc) return
+
+      try {
+        if (map.getLayer('h-path-line'))    map.setPaintProperty('h-path-line',    'line-color', color)
+        if (map.getLayer('h-cone-fill'))    map.setPaintProperty('h-cone-fill',    'fill-color', color)
+        if (map.getLayer('h-cone-outline')) map.setPaintProperty('h-cone-outline', 'line-color', color)
+
+        if (isCustom) {
+          pathSrc.setData(EMPTY_LINE)
+          coneSrc.setData(EMPTY_CONE)
+          const allCoords = fullPath.geometry.coordinates
+          let step = 0
+          const animate = () => {
+            step = Math.min(step + 2, allCoords.length)
+            const coords = allCoords.slice(0, Math.max(step, 2))
+            const partial = { ...fullPath, geometry: { type: 'LineString', coordinates: coords } }
+            try {
+              map.getSource('h-path')?.setData(partial)
+              map.getSource('h-cone')?.setData(buildCone(partial))
+            } catch (_) {}
+            if (step < allCoords.length) animRef.current = requestAnimationFrame(animate)
+          }
+          animate()
+        } else {
+          pathSrc.setData(fullPath)
+          coneSrc.setData(fullCone)
+        }
+      } catch (e) {
+        console.warn('HurricaneLayer update:', e.message)
+      }
+    }
+
+    if (map.getSource('h-path')) {
+      // Layers already exist — update immediately
+      applyUpdate()
+    } else {
+      // Layers not ready yet — queue the update for Effect 1's init() to pick up
+      pendingUpdateRef.current = applyUpdate
+    }
+
+    return () => {
+      if (animRef.current) { cancelAnimationFrame(animRef.current); animRef.current = null }
+    }
   }, [mainMap, hurricane.id, hurricane.originLng, hurricane.originLat, hurricane.destLng, hurricane.destLat, hurricane.category])  // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Minimal text label ─────────────────────────────────────────
+  // ── CAT / wind-speed label ─────────────────────────────────────
   return (
     <Marker
       longitude={hurricanePosition.lng}
@@ -152,9 +177,7 @@ export default function HurricaneLayer() {
 
 function buildCone(pathGeoJSON) {
   const coords = pathGeoJSON.geometry.coordinates
-  if (!coords?.length || coords.length < 2) {
-    return EMPTY_CONE
-  }
+  if (!coords?.length || coords.length < 2) return EMPTY_CONE
   const L = [], R = []
   coords.forEach(([lng, lat], i) => {
     const w = 1.3 * (0.12 + (i / coords.length) * 0.88)
