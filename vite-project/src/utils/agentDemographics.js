@@ -94,9 +94,8 @@ const DEMOGRAPHICS = [
   { type: 'child',    label: 'Child',    color: '#3ddc84', speed: 0.5, needsMedical: false, icon: '👦' },
 ]
 
-// ── Spawn zones — Tampa Bay (in danger zone) + inland/east (outside) ──
+// ── Spawn zones — Tampa Bay area ──────────────────────────────
 const TAMPA_ZONES = [
-  // In hurricane danger zone
   { name: 'Downtown Tampa',   lngMin: -82.48, lngMax: -82.42, latMin: 27.93, latMax: 27.97, weight: 3 },
   { name: 'Ybor City',        lngMin: -82.44, lngMax: -82.40, latMin: 27.95, latMax: 27.98, weight: 2 },
   { name: 'Hyde Park',        lngMin: -82.50, lngMax: -82.46, latMin: 27.92, latMax: 27.95, weight: 2 },
@@ -105,9 +104,6 @@ const TAMPA_ZONES = [
   { name: 'Westchase',        lngMin: -82.62, lngMax: -82.54, latMin: 28.04, latMax: 28.09, weight: 1 },
   { name: 'Brandon',          lngMin: -82.32, lngMax: -82.24, latMin: 27.92, latMax: 27.96, weight: 2 },
   { name: 'St. Pete Beach',   lngMin: -82.76, lngMax: -82.70, latMin: 27.72, latMax: 27.78, weight: 1 },
-  // Outside hurricane path (~140-180 km from track) — agents here won't evacuate
-  { name: 'Orlando',          lngMin: -81.45, lngMax: -81.32, latMin: 28.48, latMax: 28.60, weight: 2 },
-  { name: 'Daytona Beach',    lngMin: -81.08, lngMax: -80.98, latMin: 29.16, latMax: 29.26, weight: 1 },
 ]
 
 // ── Helpers ───────────────────────────────────────────────────

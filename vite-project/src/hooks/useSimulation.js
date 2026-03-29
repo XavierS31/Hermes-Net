@@ -181,9 +181,23 @@ export function useSimulation() {
       agents = useSimStore.getState().agents
     }
 
-    // Phase 1 — assign routes
-    const assignments = await assignAgentsToZones(agents, useSimStore.getState().safeZones)
-    const assignedAgents = agents.map(agent => {
+    // Pre-classify — agents outside the hurricane path danger zone are already safe
+    const path = pathRef.current
+    const inDanger  = agents.filter(a => distanceFromPath(a.position, path) < DANGER_RADIUS_KM)
+    const outOfPath = agents
+      .filter(a => distanceFromPath(a.position, path) >= DANGER_RADIUS_KM)
+      .map(a => ({ ...a, status: 'safe' }))
+
+    if (outOfPath.length > 0) {
+      useSimStore.getState().addLog(
+        `${outOfPath.length} civilians outside hurricane path — no evacuation needed`,
+        'info'
+      )
+    }
+
+    // Phase 1 — assign routes (only agents in the danger zone)
+    const assignments = await assignAgentsToZones(inDanger, useSimStore.getState().safeZones)
+    const assignedAgents = inDanger.map(agent => {
       const a = assignments.find(x => x.agentId === agent.id)
       return a
         ? { ...agent, assignedZoneId: a.zoneId, route: a.route,
@@ -192,7 +206,7 @@ export function useSimulation() {
         : agent
     })
 
-    // Phase 2 — AI character decisions (backend, optional)
+    // Phase 2 — AI character decisions (backend, optional, only for danger-zone agents)
     useSimStore.getState().addLog('AI assessing civilian profiles…', 'info')
     let agentsWithDecisions = assignedAgents
     try {
@@ -236,7 +250,7 @@ export function useSimulation() {
       useSimStore.getState().addLog('AI character decisions unavailable — defaulting all to evacuate', 'info')
     }
 
-    useSimStore.setState({ agents: agentsWithDecisions, status: 'running' })
+    useSimStore.setState({ agents: [...agentsWithDecisions, ...outOfPath], status: 'running' })
     useSimStore.getState().addLog(
       `${agentsWithDecisions.length} civilians on standby — monitoring hurricane approach`,
       'info'
