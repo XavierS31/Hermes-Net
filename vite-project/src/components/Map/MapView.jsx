@@ -25,9 +25,10 @@ export default function MapView() {
     )
   }
 
-  const pickingMode           = useSimStore(s => s.pickingMode)
-  const setPickingMode        = useSimStore(s => s.setPickingMode)
-  const updateHurricaneCustom = useSimStore(s => s.updateHurricaneCustom)
+  const pickingMode            = useSimStore(s => s.pickingMode)
+  const setPickingMode         = useSimStore(s => s.setPickingMode)
+  const updateHurricaneCustom  = useSimStore(s => s.updateHurricaneCustom)
+  const setHurricanePosition   = useSimStore(s => s.setHurricanePosition)
 
   const handleMapClick = useCallback((e) => {
     if (!pickingMode) return
@@ -35,6 +36,7 @@ export default function MapView() {
     if (pickingMode === 'origin') {
       updateHurricaneCustom('originLng', lng)
       updateHurricaneCustom('originLat', lat)
+      setHurricanePosition({ lng, lat })
     } else if (pickingMode === 'dest') {
       updateHurricaneCustom('destLng', lng)
       updateHurricaneCustom('destLat', lat)
