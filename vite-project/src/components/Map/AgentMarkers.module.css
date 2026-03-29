@@ -1,0 +1,50 @@
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--agent-color, #388bfd);
+  border: 1px solid rgba(255,255,255,0.3);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  position: relative;
+}
+
+.dot:hover {
+  transform: scale(2);
+  z-index: 10;
+}
+
+.dot.selected {
+  transform: scale(2.5);
+  border: 2px solid white;
+  box-shadow: 0 0 8px var(--agent-color);
+}
+
+.dot.waiting {
+  opacity: 0.6;
+  animation: blink 1.5s ease-in-out infinite;
+}
+
+.dot.evacuating {
+  opacity: 1;
+}
+
+.dot.arrived {
+  opacity: 0.4;
+  transform: scale(0.7);
+}
+
+.dot.stranded {
+  background: #ff4d4d;
+  animation: strandedPulse 1s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes strandedPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,77,77,0.6); }
+  50% { transform: scale(1.3); box-shadow: 0 0 0 4px rgba(255,77,77,0); }
+}

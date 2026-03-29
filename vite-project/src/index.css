@@ -1,0 +1,64 @@
+/* ── Design Tokens ──────────────────────────────────────────── */
+:root {
+  /* Backgrounds */
+  --bg-primary:   #07080f;
+  --bg-panel:     rgba(10, 12, 20, 0.96);
+  --bg-secondary: #0d0f1a;
+  --bg-card:      #111320;
+
+  /* Text */
+  --text-primary:   #e8eaf0;
+  --text-secondary: #9ca3b0;
+  --text-muted:     #5a6070;
+
+  /* Borders */
+  --border:        rgba(255, 255, 255, 0.08);
+  --border-bright: rgba(255, 255, 255, 0.18);
+
+  /* Accent palette */
+  --accent-cyan:   #39d0d8;
+  --accent-green:  #3ddc84;
+  --accent-red:    #ff4d4d;
+  --accent-blue:   #388bfd;
+  --accent-orange: #ff8c42;
+  --accent-yellow: #ffd166;
+
+  /* Typography */
+  --font-display: 'Barlow Condensed', 'Segoe UI', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Fira Code', ui-monospace, Consolas, monospace;
+  --font-body:    system-ui, 'Segoe UI', sans-serif;
+}
+
+/* ── Reset ──────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Root — full-screen, no centering constraints ───────────── */
+#root {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Scrollbar styling ──────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
