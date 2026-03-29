@@ -1,0 +1,28 @@
+# Hurricane Evacuation Simulator
+# Node.js / React project — install with: npm install
+# Requires Node.js >= 18
+
+# ── Runtime Dependencies ────────────────────────────────────────
+mapbox-gl>=3.20.0            # Map rendering engine
+react-map-gl>=7.1.7          # React wrapper for Mapbox GL JS
+react>=19.2.4                # UI framework
+react-dom>=19.2.4            # React DOM renderer
+zustand>=5.0.12              # Global state management
+framer-motion>=12.38.0       # Animations (panel slide-in)
+lucide-react>=1.7.0          # Icon library
+@turf/turf>=7.3.4            # Geospatial math utilities
+axios>=1.14.0                # HTTP client (safe zone API calls)
+@mapbox/mapbox-gl-geocoder>=5.1.2  # Address search (geocoder)
+
+# ── Dev Dependencies ────────────────────────────────────────────
+vite>=8.0.1                  # Build tool / dev server
+@vitejs/plugin-react>=6.0.1  # Vite React plugin (JSX transform)
+eslint>=9.39.4               # Linter
+eslint-plugin-react-hooks>=7.0.1    # React hooks lint rules
+eslint-plugin-react-refresh>=0.5.2  # HMR lint rules
+
+# ── Environment Variables Required ─────────────────────────────
+# Create a .env file in the project root with:
+#   VITE_MAPBOX_TOKEN=your_mapbox_public_token
+#
+# Get a free token at: https://account.mapbox.com
