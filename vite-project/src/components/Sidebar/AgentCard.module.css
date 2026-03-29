@@ -8,7 +8,7 @@
   transition: all 0.15s ease;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
 }
 
 .card:hover {
@@ -22,6 +22,13 @@
   box-shadow: 0 0 0 1px var(--agent-color, var(--accent-blue)) inset;
 }
 
+.casualtyCard {
+  border-left-color: #ff4d4d;
+  background: rgba(255, 77, 77, 0.04);
+  opacity: 0.85;
+}
+
+/* ── Header ──────────────────────────────────────────────── */
 .top {
   display: flex;
   align-items: center;
@@ -44,23 +51,30 @@
   min-width: 0;
 }
 
-.type {
+.name {
   font-family: var(--font-display);
   font-size: 12px;
   font-weight: 600;
   color: var(--text-primary);
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
 }
 
-.neighborhood {
+.meta2 {
   font-family: var(--font-mono);
   font-size: 9px;
   color: var(--text-muted);
   margin-top: 1px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
 }
+
+.meta2 span::after {
+  content: '·';
+  margin-left: 6px;
+  opacity: 0.4;
+}
+.meta2 span:last-child::after { content: ''; }
 
 .statusBadge {
   font-family: var(--font-mono);
@@ -70,8 +84,54 @@
   border-radius: 3px;
   border: 1px solid;
   flex-shrink: 0;
+  text-transform: uppercase;
 }
 
+/* ── Situation ───────────────────────────────────────────── */
+.situation {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  padding: 5px 7px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 3px;
+  border-left: 2px solid var(--border);
+}
+
+/* ── AI reasoning ────────────────────────────────────────── */
+.reasoning {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 5px 7px;
+  background: rgba(56, 139, 253, 0.05);
+  border-radius: 3px;
+  border-left: 2px solid rgba(56, 139, 253, 0.4);
+}
+
+.casualtyCard .reasoning {
+  background: rgba(255, 77, 77, 0.05);
+  border-left-color: rgba(255, 77, 77, 0.4);
+}
+
+.reasoningLabel {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.reasoningText {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--text-secondary, #8b9ab1);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* ── Progress bar ────────────────────────────────────────── */
 .progressRow {
   display: flex;
   align-items: center;
@@ -100,7 +160,8 @@
   text-align: right;
 }
 
-.meta {
+/* ── Meta row ────────────────────────────────────────────── */
+.metaRow {
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -124,9 +185,11 @@
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--text-primary);
+  text-align: right;
+  max-width: 65%;
 }
 
-/* Compact variant */
+/* ── Compact variant ─────────────────────────────────────── */
 .compact {
   display: flex;
   align-items: center;
@@ -169,6 +232,9 @@
   font-family: var(--font-display);
   font-size: 11px;
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .compactNeighborhood {
@@ -185,4 +251,5 @@
   font-size: 9px;
   letter-spacing: 0.5px;
   flex-shrink: 0;
+  text-transform: uppercase;
 }

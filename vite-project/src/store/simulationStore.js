@@ -63,6 +63,10 @@ export const useSimStore = create((set, get) => ({
   // ── Logs ────────────────────────────────────────────────────
   logs: [],
 
+  // ── Threat assessment ────────────────────────────────────────
+  evacuationTriggered: false,
+  threatAssessment: { distanceKm: 0, distanceMiles: 0, certainty: 5, phase: 'MONITORING' },
+
   // ── Map picking mode ────────────────────────────────────────
   pickingMode: null, // null | 'origin' | 'dest'
 
@@ -75,6 +79,10 @@ export const useSimStore = create((set, get) => ({
   // ── Actions ─────────────────────────────────────────────────
   setStatus: (status) => set({ status }),
   setSpeed: (speed) => set({ speed }),
+  setThreatAssessment: (t) => set({ threatAssessment: t }),
+
+  // Mark order as issued — useSimulation handles per-agent path-distance check
+  triggerEvacuation: () => set({ evacuationTriggered: true }),
 
   setHurricanePreset: (id) => {
     const preset = get().hurricanePresets.find(p => p.id === id)
@@ -147,6 +155,8 @@ export const useSimStore = create((set, get) => ({
       safeZones: [],
       logs: [],
       selectedAgentId: null,
+      evacuationTriggered: false,
+      threatAssessment: { distanceKm: 0, distanceMiles: 0, certainty: 5, phase: 'MONITORING' },
     })),
 
   spawnAgents: (count = 80) => {

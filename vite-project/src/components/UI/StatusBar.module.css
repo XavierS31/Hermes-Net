@@ -1,5 +1,5 @@
 .bar {
-  height: 56px;
+  height: 72px;
   background: rgba(7, 11, 20, 0.98);
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -41,15 +41,16 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
 }
 
 .stormName {
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   letter-spacing: 3px;
   text-transform: uppercase;
+  line-height: 1;
 }
 
 .stormDetail {
@@ -65,7 +66,6 @@
   background: var(--border);
   border-radius: 1px;
   overflow: hidden;
-  margin-top: 2px;
 }
 
 .progressFill {
@@ -74,10 +74,67 @@
   transition: width 0.3s linear;
 }
 
+/* ── Threat ticker ──────────────────────────────────────────── */
+.threatRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.threatItem {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.threatLabel {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.threatValue {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.5px;
+}
+
+.dot {
+  color: var(--border);
+  font-size: 10px;
+}
+
+.phaseBadge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  opacity: 0.9;
+}
+
+.evacActive {
+  animation: evacPulse 1s ease-in-out infinite;
+}
+
+@keyframes evacPulse {
+  0%, 100% { opacity: 0.9; }
+  50%       { opacity: 0.4; }
+}
+
+/* ── Right stats ────────────────────────────────────────────── */
 .right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 18px;
   min-width: 220px;
   justify-content: flex-end;
 }

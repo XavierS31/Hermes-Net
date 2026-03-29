@@ -26,3 +26,8 @@ class SimulationStartInput(BaseModel):
     hurricane: dict
     agents: List[AgentInput]
     safe_zones: List[dict]
+
+class AgentDecisionsInput(BaseModel):
+    hurricane: dict
+    agents: List[dict]   # full agent objects with name/age/situation/personality
+    safe_zones: List[dict]

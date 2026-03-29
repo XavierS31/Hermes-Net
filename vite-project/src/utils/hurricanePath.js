@@ -84,6 +84,17 @@ export function pathToGeoJSON(controlPoints, steps = 100) {
   }
 }
 
+// Minimum distance in km from a point to any position along the projected path
+export function distanceFromPath(point, controlPoints, steps = 60) {
+  let minDist = Infinity
+  for (let i = 0; i <= steps; i++) {
+    const pos = interpolatePosition(controlPoints, i / steps)
+    const d = distanceFromEye(pos, point)
+    if (d < minDist) minDist = d
+  }
+  return minDist
+}
+
 // Distance in km from hurricane eye to a point
 export function distanceFromEye(eyePos, point) {
   const R = 6371

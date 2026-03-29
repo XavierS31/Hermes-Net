@@ -19,8 +19,12 @@ function agentToFeature(agent) {
   })
 
   const color =
+    agent.status === 'casualty'  ? '#8b0000' :
     agent.status === 'stranded'  ? '#ff4d4d' :
+    agent.status === 'sheltering'? '#ffd166' :
     agent.status === 'arrived'   ? '#3ddc84' :
+    agent.status === 'waiting'   ? '#2a3550' :
+    agent.status === 'safe'      ? '#1a2030' :
     agent.color
 
   return {

@@ -3,10 +3,10 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from agents.zone_agent import generate_safe_zones
-from agents.civilian_agent import get_batch_decisions
+from agents.civilian_agent import get_batch_decisions, get_all_decisions_batch
 from agents.coordinator_agent import get_coordinator_assessment
 from models.hurricane import HurricaneInput
-from models.agent import SimulationStartInput
+from models.agent import SimulationStartInput, AgentDecisionsInput
 from simulation.engine import engine
 from simulation.routing import assign_agents_to_zones
 
@@ -44,6 +44,12 @@ async def health():
 async def api_generate_safe_zones(payload: HurricaneInput):
     zones = await generate_safe_zones(payload.origin_lng, payload.origin_lat, payload.dest_lng, payload.dest_lat, payload.category, payload.wind_speed)
     return {"safe_zones": zones}
+
+@app.post("/api/agent-decisions")
+async def api_agent_decisions(payload: AgentDecisionsInput):
+    """AI reasons about every agent's evacuation decision in one batch call."""
+    decisions = await get_all_decisions_batch(payload.agents, payload.hurricane, payload.safe_zones)
+    return {"decisions": decisions}
 
 @app.post("/api/start-simulation")
 async def api_start_simulation(payload: SimulationStartInput):
