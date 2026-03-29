@@ -62,3 +62,17 @@ html, body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ── Hurricane animation keyframes ─────────────────────────── */
+@keyframes hurricane-ccw {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
+}
+@keyframes hurricane-cw {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes hurricane-ccw-fast {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
+}
