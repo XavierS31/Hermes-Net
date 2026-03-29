@@ -25,7 +25,10 @@ def create_traffic_agent(sim) -> LlmAgent:
                 "pct_used": round(data["current_load"] / data["capacity"] * 100, 1),
                 "slots_free": data["capacity"] - data["current_load"],
                 "route": data["route"],
-                "wind_unsafe": bid == "sunshine_skyway" and wind > 120,
+                "closed": bool(data.get("closed", False)),
+                "local_wind_mph": data.get("local_wind_mph"),
+                "wind_unsafe": bid == "sunshine_skyway"
+                and (data.get("closed") or wind > 120),
             }
             for bid, data in sim.bridges.items()
         }
@@ -62,9 +65,13 @@ def create_traffic_agent(sim) -> LlmAgent:
         if new_bridge_id not in sim.bridges:
             return {"error": f"Unknown bridge '{new_bridge_id}'"}
 
+        if new_bridge_id == "sunshine_skyway" and sim.bridges["sunshine_skyway"].get("closed"):
+            return {
+                "error": "Sunshine Skyway is CLOSED — sustained wind at the span exceeds operational limits (physics)",
+            }
         wind = sim.hurricane.wind_speed
         if new_bridge_id == "sunshine_skyway" and wind > 120:
-            return {"error": "Sunshine Skyway is unsafe — wind speed exceeds 120 mph"}
+            return {"error": "Sunshine Skyway is unsafe — ambient storm wind exceeds 120 mph"}
 
         for r in sim.agents_by_type[ResidentAgent]:
             if r.unique_id == resident_id:
@@ -94,16 +101,19 @@ def create_traffic_agent(sim) -> LlmAgent:
         instruction="""You are the Traffic Agent in Tampa Bay's autonomous hurricane evacuation system.
 Your job: prevent bridge congestion and protect residents from unsafe crossings.
 
+The shared message includes **forecast JSON** and **Coordinator notes** (wind, track, shelter strategy).
+Use wind and motion in the forecast when judging risk; keep Skyway closures when winds are high.
+
 Bridge facts:
 - gandy: capacity 100, I-275 North route
 - howard_frankland: capacity 100, SR-60 East route — most inland and wind-safe
-- sunshine_skyway: capacity 80, US-19 North — highest wind exposure, close if wind > 120 mph
+- sunshine_skyway: capacity 80, US-19 North — physics may set **closed** when local sustained wind at the span exceeds limits; also unsafe if ambient storm wind > 120 mph
 
 Each tick you MUST:
-1. Call get_bridge_loads() to see utilisation across all bridges.
+1. Call get_bridge_loads() to see utilisation across all bridges (check **closed** and wind_unsafe).
 2. For any bridge above 75% capacity, call get_residents_on_bridge() to see who is on it.
 3. Reroute residents (lowest progress first) to a bridge with free capacity using
-   reroute_resident(). Never send anyone to Sunshine Skyway if wind > 120 mph.
+   reroute_resident(). Never send anyone to Sunshine Skyway if it is closed or wind_unsafe.
 4. Summarise: which bridges were congested, who was rerouted, and the resulting load.""",
         tools=[get_bridge_loads, get_residents_on_bridge, reroute_resident],
     )

@@ -1,6 +1,6 @@
 import mesa
 import random
-from simulation.geography import SHELTERS, BRIDGES
+from simulation.geography import BRIDGES, SHELTERS, ZONE_SPAWN
 
 ALERT_ORDER = ["monitor", "advisory", "warning", "emergency"]
 
@@ -20,14 +20,24 @@ class ResidentAgent(mesa.Agent):
         self.has_car = random.random() > 0.3
         self.mobility = random.choice(["normal", "normal", "normal", "limited"])
         self.risk_tolerance = random.uniform(0, 1)
-        self.lat = random.uniform(27.75, 28.05)
-        self.lng = random.uniform(-82.75, -82.25)
+        box = ZONE_SPAWN.get(zone)
+        if box:
+            self.lat = random.uniform(box["min_lat"], box["max_lat"])
+            self.lng = random.uniform(box["min_lng"], box["max_lng"])
+        else:
+            self.lat = random.uniform(27.75, 28.05)
+            self.lng = random.uniform(-82.75, -82.25)
         self.start_lat = self.lat
         self.start_lng = self.lng
         self.status = "waiting"
         self.assigned_shelter = None
         self.assigned_bridge = None
         self.progress = 0.0
+        # Updated each step by HurricanePhysics (Holland wind + surge)
+        self.local_wind_speed_mph = 0.0
+        self.local_surge_height_ft = 0.0
+        self.wind_exposure = 0.0
+        self.is_trapped = False
 
     def _alert_index(self, level):
         return ALERT_ORDER.index(level) if level in ALERT_ORDER else 0
@@ -49,10 +59,19 @@ class ResidentAgent(mesa.Agent):
         eligible = {k: v for k, v in SHELTERS.items() if not v["requires_car"] or self.has_car}
         if not eligible:
             eligible = SHELTERS
-        self.assigned_shelter = min(
-            eligible,
-            key=lambda k: abs(eligible[k]["lat"] - self.lat) + abs(eligible[k]["lng"] - self.lng),
-        )
+        plan = getattr(self.model, "ai_plan", None) or {}
+        ranking = plan.get("shelter_ranking") or []
+        chosen = None
+        for sid in ranking:
+            if sid in eligible:
+                chosen = sid
+                break
+        if chosen is None:
+            chosen = min(
+                eligible,
+                key=lambda k: abs(eligible[k]["lat"] - self.lat) + abs(eligible[k]["lng"] - self.lng),
+            )
+        self.assigned_shelter = chosen
         self.assigned_bridge = min(
             BRIDGES,
             key=lambda k: abs(BRIDGES[k]["lat"] - self.lat) + abs(BRIDGES[k]["lng"] - self.lng),

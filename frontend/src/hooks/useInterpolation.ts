@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { SimState } from '../types'
 
-const TICK_MS = 5000 // must match backend SIM_HEARTBEAT_SECONDS
+const TICK_MS = 2000 // WebSocket broadcast interval (backend _tick_loop)
 
 export function useInterpolation(state: SimState | null): SimState | null {
   const prevRef = useRef<SimState | null>(null)

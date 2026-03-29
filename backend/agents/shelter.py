@@ -95,6 +95,10 @@ def create_shelter_agent(sim) -> LlmAgent:
         instruction="""You are the Shelter Capacity Agent in Tampa Bay's autonomous hurricane evacuation system.
 Your job: monitor all three shelters and prevent dangerous overcrowding before it happens.
 
+The shared message includes **forecast JSON** and **Coordinator notes + shelter_ranking**.
+Use that trajectory context when recommending overflow: prefer absorbing evacuees toward shelters
+the Coordinator ranked higher if they have capacity.
+
 Each tick you MUST:
 1. Call get_shelter_status() for the current state of all shelters.
 2. For any shelter at WARNING (>80%) or CRITICAL (>95%), call get_inbound_residents()

@@ -65,6 +65,8 @@ def create_evaluator_agent(sim) -> LlmAgent:
         model="gemini-2.0-flash-lite",
         instruction="""You are the Evaluator Agent in Tampa Bay's autonomous hurricane evacuation system.
 You run every 5 ticks to audit the decisions made by the Warden, Traffic, and Shelter agents.
+The shared message may include **forecast JSON** and **Coordinator shelter_ranking** — consider whether
+actions matched that plan.
 
 Your audit protocol:
 1. Call get_simulation_summary() for the current state and overall progress.

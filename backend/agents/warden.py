@@ -81,13 +81,18 @@ def create_warden_agent(sim) -> LlmAgent:
 Your job: prevent shelter overcrowding and ensure fair distribution across the three shelters
 (north, northeast, east).
 
+The user message includes a **Coordinator shelter_ranking** from the Meteorology Coordinator,
+which used live hurricane trajectory / forecast API data. **Prefer moves that align with that
+priority order** when reassigning (e.g. send overflow toward higher-priority shelters first),
+while still respecting capacity and progress.
+
 Each tick you MUST:
 1. Call get_shelter_loads() to see current capacity across all shelters.
 2. Call get_evacuating_residents() to see who is assigned where.
 3. If any shelter exceeds 80% full while another has at least 30% free capacity,
    call reassign_resident() to move residents. Pick residents with the lowest
-   progress first (they haven't committed far yet). Keep Zone A residents at their
-   closest shelter unless that shelter is critically full (>90%).
+   progress first (they haven't committed far yet). Align with Coordinator ranking when
+   choosing destinations; use Zone A/B urgency when ties break.
 4. Summarise your decisions in 2-3 sentences: what you changed, why, and what
    risk remains.""",
         tools=[get_shelter_loads, get_evacuating_residents, reassign_resident],

@@ -1,0 +1,192 @@
+{
+  "meta": {
+    "region": "Tampa Bay metropolitan area, Florida",
+    "notes": "Coordinates are approximate public locations suitable for simulation. Verify against official GIS before operational use.",
+    "sources": [
+      "Bridges: span-center coordinates from OpenStreetMap / Wikimedia (Gandy, Howard Frankland, Sunshine Skyway)",
+      "Shelters: Florida State Fairgrounds (Hillsborough), public shelter / stadium coordinates in Plant City and Polk County (Lakeland area)",
+      "Evacuation zone spawn boxes: simplified rectangles over Tampa Bay counties (Pinellas/Hillsborough/Polk) — not parcel-accurate",
+      "Hurricane approach paths: offshore entry points aligned with common Gulf / Atlantic recurvature corridors toward Tampa Bay"
+    ]
+  },
+  "reference": {
+    "name": "Tampa Bay (convention center vicinity)",
+    "lat": 27.9506,
+    "lng": -82.4572
+  },
+  "bridges": {
+    "gandy": {
+      "name": "Gandy Bridge (I-275)",
+      "lat": 27.8931,
+      "lng": -82.5542,
+      "capacity": 100,
+      "route": "I-275 North",
+      "osm_note": "Tampa Bay crossing, Pinellas–Hillsborough"
+    },
+    "howard_frankland": {
+      "name": "Howard Frankland Bridge (I-275 / SR-60)",
+      "lat": 27.9192,
+      "lng": -82.5855,
+      "capacity": 100,
+      "route": "SR-60 East / I-275",
+      "osm_note": "Main Tampa–St. Pete freeway span"
+    },
+    "sunshine_skyway": {
+      "name": "Sunshine Skyway Bridge (I-275)",
+      "lat": 27.6258,
+      "lng": -82.6914,
+      "capacity": 80,
+      "route": "US-19 / I-275",
+      "osm_note": "High-level span over Lower Tampa Bay"
+    }
+  },
+  "shelters": {
+    "north": {
+      "name": "Florida State Fairgrounds (large venue / evacuation hub)",
+      "lat": 27.9875,
+      "lng": -82.3545,
+      "capacity": 200,
+      "requires_car": false,
+      "distance_miles": 12,
+      "address_note": "4800 US-301, Tampa (approx.)"
+    },
+    "northeast": {
+      "name": "Plant City area shelter cluster (eastern Hillsborough)",
+      "lat": 28.022,
+      "lng": -82.139,
+      "capacity": 150,
+      "requires_car": true,
+      "distance_miles": 22,
+      "address_note": "Representative NE Hillsborough / Plant City corridor"
+    },
+    "east": {
+      "name": "Lakeland area (Polk County reception / shelter zone)",
+      "lat": 28.0395,
+      "lng": -81.9498,
+      "capacity": 300,
+      "requires_car": false,
+      "distance_miles": 35,
+      "address_note": "Inland Polk County — east evacuation corridor"
+    }
+  },
+  "zones": {
+    "A": {
+      "description": "Coastal Pinellas / lower Tampa Bay — highest surge risk",
+      "priority": 1
+    },
+    "B": {
+      "description": "Near-coastal Hillsborough / upper bay",
+      "priority": 2
+    },
+    "C": {
+      "description": "Central county / moderate risk",
+      "priority": 3
+    },
+    "D": {
+      "description": "Inland suburbs — lower surge",
+      "priority": 4
+    },
+    "E": {
+      "description": "Eastern / Polk fringe — lowest priority",
+      "priority": 5
+    }
+  },
+  "zone_spawn": {
+    "A": {
+      "min_lat": 27.68,
+      "max_lat": 27.82,
+      "min_lng": -82.82,
+      "max_lng": -82.58
+    },
+    "B": {
+      "min_lat": 27.78,
+      "max_lat": 27.92,
+      "min_lng": -82.68,
+      "max_lng": -82.42
+    },
+    "C": {
+      "min_lat": 27.85,
+      "max_lat": 28.02,
+      "min_lng": -82.55,
+      "max_lng": -82.28
+    },
+    "D": {
+      "min_lat": 27.92,
+      "max_lat": 28.08,
+      "min_lng": -82.45,
+      "max_lng": -82.15
+    },
+    "E": {
+      "min_lat": 28.0,
+      "max_lat": 28.15,
+      "min_lng": -82.25,
+      "max_lng": -81.95
+    }
+  },
+  "hurricane_approach_paths": {
+    "south": [
+      { "lat": 24.55, "lng": -80.15, "label": "Straits of Florida" },
+      { "lat": 25.35, "lng": -81.05, "label": "SW Florida offshore" },
+      { "lat": 26.15, "lng": -81.85, "label": "West of Naples" },
+      { "lat": 26.95, "lng": -82.28, "label": "Sarasota offshore" },
+      { "lat": 27.42, "lng": -82.48, "label": "Manatee Bay approach" },
+      { "lat": 27.92, "lng": -82.55, "label": "Upper Tampa Bay" }
+    ],
+    "southeast": [
+      { "lat": 25.05, "lng": -79.45, "label": "Bahamas west" },
+      { "lat": 25.85, "lng": -80.35, "label": "Atlantic approach" },
+      { "lat": 26.55, "lng": -81.05, "label": "Palm Beach offshore" },
+      { "lat": 27.05, "lng": -81.65, "label": "Central Gulf Stream" },
+      { "lat": 27.52, "lng": -82.08, "label": "Sarasota east" },
+      { "lat": 27.92, "lng": -82.52, "label": "Tampa Bay entry" }
+    ],
+    "east": [
+      { "lat": 27.92, "lng": -79.75, "label": "Atlantic east of state" },
+      { "lat": 27.92, "lng": -80.55, "label": "Cape Canaveral offshore" },
+      { "lat": 27.92, "lng": -81.15, "label": "Central FL" },
+      { "lat": 27.92, "lng": -81.72, "label": "Orlando west" },
+      { "lat": 27.92, "lng": -82.12, "label": "Lakeland approach" },
+      { "lat": 27.92, "lng": -82.52, "label": "Tampa Bay" }
+    ],
+    "northeast": [
+      { "lat": 30.05, "lng": -79.75, "label": "Carolina offshore" },
+      { "lat": 29.45, "lng": -80.45, "label": "Georgia Bight" },
+      { "lat": 28.95, "lng": -81.15, "label": "North FL Atlantic" },
+      { "lat": 28.48, "lng": -81.78, "label": "Ocala forest west" },
+      { "lat": 28.08, "lng": -82.18, "label": "Brooksville south" },
+      { "lat": 27.92, "lng": -82.52, "label": "Tampa Bay" }
+    ],
+    "north": [
+      { "lat": 30.75, "lng": -82.48, "label": "SE Georgia inland" },
+      { "lat": 30.15, "lng": -82.48, "label": "North FL panhandle" },
+      { "lat": 29.45, "lng": -82.48, "label": "Gainesville corridor" },
+      { "lat": 28.78, "lng": -82.48, "label": "Crystal River south" },
+      { "lat": 28.18, "lng": -82.48, "label": "Spring Hill approach" },
+      { "lat": 27.92, "lng": -82.52, "label": "Tampa Bay" }
+    ],
+    "northwest": [
+      { "lat": 30.45, "lng": -85.45, "label": "Central Gulf" },
+      { "lat": 29.95, "lng": -84.45, "label": "Panhandle west" },
+      { "lat": 29.35, "lng": -83.65, "label": "Big Bend offshore" },
+      { "lat": 28.78, "lng": -83.05, "label": "Cedar Key south" },
+      { "lat": 28.22, "lng": -82.68, "label": "Pasco coast" },
+      { "lat": 27.92, "lng": -82.52, "label": "Tampa Bay" }
+    ],
+    "west": [
+      { "lat": 27.92, "lng": -87.45, "label": "Central Gulf high seas" },
+      { "lat": 27.92, "lng": -86.05, "label": "Mississippi fan south" },
+      { "lat": 27.92, "lng": -84.45, "label": "De Soto Canyon west" },
+      { "lat": 27.92, "lng": -83.45, "label": "Apalachicola offshore" },
+      { "lat": 27.92, "lng": -82.88, "label": "Egmont Key west" },
+      { "lat": 27.92, "lng": -82.52, "label": "Tampa Bay" }
+    ],
+    "southwest": [
+      { "lat": 24.85, "lng": -85.45, "label": "Yucatan Channel east" },
+      { "lat": 25.55, "lng": -84.45, "label": "Loop Current north" },
+      { "lat": 26.25, "lng": -83.75, "label": "Fort Myers west" },
+      { "lat": 26.92, "lng": -83.15, "label": "Charlotte Harbor" },
+      { "lat": 27.42, "lng": -82.78, "label": "Manatee west" },
+      { "lat": 27.92, "lng": -82.52, "label": "Tampa Bay" }
+    ]
+  }
+}

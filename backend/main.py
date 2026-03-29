@@ -1,5 +1,7 @@
 import asyncio
+import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -7,9 +9,14 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from simulation.model import TampaBayModel
 from simulation.agents.resident import ResidentAgent
-from simulation.geography import HURRICANE_PATHS
+from simulation.geography import HURRICANE_PATHS, export_for_frontend
+from services.trajectory_forecast import fetch_hurricane_trajectory
 
-load_dotenv()
+_BACKEND_DIR = Path(__file__).resolve().parent
+# Always load backend/.env (cwd-independent — plain load_dotenv() misses it when uvicorn cwd ≠ backend)
+load_dotenv(_BACKEND_DIR / ".env")
+if not os.getenv("GOOGLE_API_KEY") and os.getenv("GEMINI_API_KEY"):
+    os.environ["GOOGLE_API_KEY"] = os.environ["GEMINI_API_KEY"]
 
 _origin = "south"
 sim = TampaBayModel(n_residents=3, hurricane_origin=_origin)
@@ -86,6 +93,46 @@ def set_origin(origin: str):
 @app.get("/hurricane/origins")
 def list_origins():
     return {"origins": list(HURRICANE_PATHS.keys()), "current": _origin}
+
+
+@app.get("/hurricane/trajectory")
+async def get_hurricane_trajectory():
+    """Latest forecast track for the Coordinator and UI (external API if HURRICANE_FORECAST_API_URL set)."""
+    data = await fetch_hurricane_trajectory(sim)
+    sim.forecast_snapshot = data
+    return data
+
+
+@app.get("/geography")
+def get_geography():
+    """Bridges, shelters, and hurricane approach paths from tampa_geography.json (single source of truth)."""
+    return export_for_frontend()
+
+
+def _mask_key(value: str | None) -> str | None:
+    if not value:
+        return None
+    if len(value) <= 12:
+        return "***"
+    return f"{value[:7]}...{value[-4:]}"
+
+
+@app.get("/debug/api-config")
+def debug_api_config():
+    """Safe diagnostics for API key setup (no full secrets)."""
+    env_path = _BACKEND_DIR / ".env"
+    key = os.getenv("GOOGLE_API_KEY")
+    return {
+        "cwd": os.getcwd(),
+        "backend_env_path": str(env_path),
+        "backend_env_file_exists": env_path.is_file(),
+        "google_api_key_loaded": bool(key),
+        "google_api_key_preview": _mask_key(key),
+        "mapbox_note": (
+            "Mapbox is read only in the browser: set VITE_MAPBOX_TOKEN in frontend/.env "
+            "and restart Vite (Vite_ prefix required)."
+        ),
+    }
 
 
 @app.post("/agents/run")
