@@ -1,0 +1,94 @@
+.controls {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(7, 11, 20, 0.92);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.speedGroup {
+  display: flex;
+  gap: 4px;
+  padding-right: 10px;
+  border-right: 1px solid var(--border);
+  margin-right: 4px;
+}
+
+.speedBtn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  letter-spacing: 0.5px;
+}
+
+.speedBtn:hover {
+  color: var(--text-primary);
+  border-color: var(--border-bright);
+}
+
+.speedBtn.activeSpeed {
+  background: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: white;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 5px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.play {
+  background: var(--accent-green);
+  color: #050e05;
+  border: 1px solid var(--accent-green);
+}
+
+.play:hover {
+  background: #4fff9e;
+  box-shadow: 0 0 12px rgba(61, 220, 132, 0.4);
+}
+
+.pause {
+  background: transparent;
+  color: var(--accent-yellow);
+  border: 1px solid var(--accent-yellow);
+}
+
+.pause:hover {
+  background: rgba(255, 209, 102, 0.1);
+}
+
+.reset {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.reset:hover {
+  color: var(--accent-red);
+  border-color: var(--accent-red);
+}
