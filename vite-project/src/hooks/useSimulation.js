@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react'
 import { useSimStore } from '../store/simulationStore'
 import { buildHurricanePath, interpolatePosition } from '../utils/hurricanePath'
+
+const SIM_START_PROGRESS = 0.40  // start hurricane approaching Tampa, not at origin
 import { assignAgentsToZones } from '../utils/shortestRoute'
 
 const TICK_MS = 100 // base tick interval in ms
@@ -110,7 +112,16 @@ export function useSimulation() {
         : agent
     })
 
-    useSimStore.setState({ agents: assignedAgents, status: 'running' })
+    const startPos = pathRef.current
+      ? interpolatePosition(pathRef.current, SIM_START_PROGRESS)
+      : { lng: state.hurricane.originLng, lat: state.hurricane.originLat }
+
+    useSimStore.setState({
+      agents: assignedAgents,
+      status: 'running',
+      hurricaneProgress: SIM_START_PROGRESS,
+      hurricanePosition: startPos,
+    })
     useSimStore.getState().addLog('Evacuation simulation started', 'info')
     useSimStore.getState().addLog(`${assignedAgents.length} agents assigned to safe zones`, 'info')
   }

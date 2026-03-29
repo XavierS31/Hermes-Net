@@ -40,9 +40,9 @@ export default function MapView() {
         id="mainMap"
         mapboxAccessToken={MAPBOX_TOKEN}
         initialViewState={{
-          longitude: -82.4572,
-          latitude: 27.9506,
-          zoom: 9.5,
+          longitude: -82.5,
+          latitude: 27.5,
+          zoom: 6,
         }}
         style={{ width: '100%', height: '100%' }}
         mapStyle="mapbox://styles/mapbox/dark-v11"
