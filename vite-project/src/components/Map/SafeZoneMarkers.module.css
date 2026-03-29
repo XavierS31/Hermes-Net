@@ -1,0 +1,103 @@
+.marker {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+}
+
+.icon {
+  font-size: 18px;
+  z-index: 2;
+  position: relative;
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--fill-color, #3ddc84);
+  opacity: 0.8;
+}
+
+.pulse {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px solid var(--fill-color, #3ddc84);
+  opacity: 0;
+  animation: safePulse 2.5s ease-out infinite;
+}
+
+@keyframes safePulse {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+.popup :global(.mapboxgl-popup-content) {
+  background: rgba(10, 16, 30, 0.96) !important;
+  border: 1px solid rgba(56, 139, 253, 0.3) !important;
+  border-radius: 6px !important;
+  padding: 0 !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
+}
+
+.popup :global(.mapboxgl-popup-tip) {
+  border-top-color: rgba(56, 139, 253, 0.3) !important;
+}
+
+.popupContent {
+  padding: 12px 14px;
+  min-width: 200px;
+  font-family: var(--font-mono);
+}
+
+.popupTitle {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.popupRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.popupRow span:last-child {
+  color: var(--text-primary);
+}
+
+.bar {
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 6px 0 8px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.reasoning {
+  margin-top: 8px;
+  font-size: 10px;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.4;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}

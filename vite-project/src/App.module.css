@@ -1,0 +1,57 @@
+.app {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  position: relative;
+  overflow: hidden;
+}
+
+.main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 300px 1fr 320px;
+  overflow: hidden;
+  position: relative;
+}
+
+.leftPanel {
+  height: 100%;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  z-index: 10;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.rightPanel {
+  height: 100%;
+  background: var(--bg-panel);
+  border-left: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  z-index: 10;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.mapContainer {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+.scanlines {
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}

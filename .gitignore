@@ -24,3 +24,4 @@ Thumbs.db
 node_modules/
 dashboard/node_modules/
 *.local
+.env
