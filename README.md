@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="vite-project/src/assets/Hermes.png" alt="Hermes" width="420" />
-</p>
+
 
 # Hermes
 
