@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="Hermes-Net/vite-project/src/assets/hermeslogo.png" alt="Hermes" width="420" />
+  <img src="vite-project/src/assets/Hermes.png" alt="Hermes" width="420" />
 </p>
 
 # Hermes
@@ -26,7 +26,7 @@ The project name references the messenger of the gods: the app aims to turn stor
 
 | Layer | Technologies |
 |--------|----------------|
-| **Frontend** | [Vite](https://vitejs.dev/) 8, [React](https://react.dev/) 19, [React Router](https://reactrouter.com/) 7, [react-map-gl](https://visgl.github.io/react-map-gl/) + [Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/) 3, [Three.js](https://threejs.org/) (3D overlays), [Zustand](https://github.com/pmndrs/zustand) (state), [Framer Motion](https://www.framer.com/motion/) (animations), [Axios](https://axios-http.com/), [Turf.js](https://turfjs.org/), [Lucide React](https://lucide.dev/) |
+| **Frontend** | [Vite](https://vitejs.dev/), [React](https://react.dev/), [React Router](https://reactrouter.com/), [react-map-gl](https://visgl.github.io/react-map-gl/) + [Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/) 3, [Three.js](https://threejs.org/) (3D overlays), [Zustand](https://github.com/pmndrs/zustand) (state), [Framer Motion](https://www.framer.com/motion/) (animations), [Axios](https://axios-http.com/), [Turf.js](https://turfjs.org/), [Lucide React](https://lucide.dev/) |
 | **Backend** | [FastAPI](https://fastapi.tiangolo.com/), [Uvicorn](https://www.uvicorn.org/), [WebSockets](https://websockets.readthedocs.io/), [Pydantic](https://docs.pydantic.dev/) |
 | **AI (backend)** | [Google ADK](https://google.github.io/adk-docs/) (`google-adk`) with **Gemini** models (`gemini-1.5-flash`) for safe-zone generation and batch civilian “decisions”; requires `GOOGLE_API_KEY` (or `GEMINI_API_KEY` as fallback) |
 
@@ -159,7 +159,6 @@ With both services running, the Vite dev proxy forwards `/api/*` to the backend 
 
 ## License
 
-No license file is present in this repository; add one if you intend to distribute or reuse the code.
 
 ---
 
