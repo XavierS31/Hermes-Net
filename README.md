@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="vite-project/src/assets/Hermes.png" alt="Hermes" width="420" />
+  <img src="vite-project/src/assets/Hermes.jpg" alt="Hermes" width="420" />
 </p>
 
 # Hermes
